@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.send("Server Running");
+  res.send("Chatbot Server Running");
 });
 
 app.post("/chat", async (req, res) => {
@@ -25,12 +25,14 @@ app.post("/chat", async (req, res) => {
     const { message } = req.body;
 
     if (!message) {
+
       return res.status(400).json({
-        error: "Message required"
+        reply: "Message missing"
       });
+
     }
 
-    const response = await fetch(
+    const aiResponse = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
@@ -53,23 +55,23 @@ app.post("/chat", async (req, res) => {
       }
     );
 
-    const data = await response.json();
+    const data = await aiResponse.json();
 
     console.log(data);
 
-    const aiReply =
+    const reply =
       data?.choices?.[0]?.message?.content ||
-      "No AI reply";
+      "No AI response";
 
     await supabase.from("chats").insert([
       {
         user_message: message,
-        ai_reply: aiReply
+        ai_reply: reply
       }
     ]);
 
     res.json({
-      reply: aiReply
+      reply
     });
 
   } catch (error) {
@@ -77,14 +79,13 @@ app.post("/chat", async (req, res) => {
     console.log(error);
 
     res.status(500).json({
-      error: error.message
+      reply: "Server Error"
     });
   }
-
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Running on ${PORT}`);
 });
