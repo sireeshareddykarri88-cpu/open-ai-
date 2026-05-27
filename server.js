@@ -15,19 +15,21 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.send("Chatbot Server Running");
+  res.send("Server Running");
 });
 
 app.post("/chat", async (req, res) => {
 
   try {
 
-    const { message } = req.body;
+    console.log(req.body);
+
+    const message = req.body.message;
 
     if (!message) {
 
       return res.status(400).json({
-        reply: "Message missing"
+        reply: "Message required"
       });
 
     }
@@ -60,8 +62,8 @@ app.post("/chat", async (req, res) => {
     console.log(data);
 
     const reply =
-      data?.choices?.[0]?.message?.content ||
-      "No AI response";
+      data?.choices?.[0]?.message?.content
+      || "No AI response";
 
     await supabase.from("chats").insert([
       {
@@ -70,7 +72,7 @@ app.post("/chat", async (req, res) => {
       }
     ]);
 
-    res.json({
+    return res.json({
       reply
     });
 
@@ -78,8 +80,8 @@ app.post("/chat", async (req, res) => {
 
     console.log(error);
 
-    res.status(500).json({
-      reply: "Server Error"
+    return res.status(500).json({
+      reply: "Backend Server Error"
     });
   }
 });
@@ -87,5 +89,5 @@ app.post("/chat", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Running on ${PORT}`);
+  console.log("Server running on port " + PORT);
 });
